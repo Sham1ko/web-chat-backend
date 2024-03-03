@@ -43,4 +43,10 @@ export class UsersService {
       throw error;
     }
   }
+
+  async findOneByEmail(email: string): Promise<UserDocument> {
+    return this.userModel.findOne({
+      email,
+    });
+  }
 }
