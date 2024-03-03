@@ -7,9 +7,6 @@ import { User, UserDocument } from './user.schema';
 import { PublicUser } from './dto/IUser';
 @Injectable()
 export class UsersService {
-  getAllUsers() {
-    throw new Error('Method not implemented.');
-  }
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   /**
@@ -46,13 +43,5 @@ export class UsersService {
       Logger.error(error);
       throw error;
     }
-  }
-
-  /**
-   * Returns all users from the database.
-   * @return Array of Users from the database
-   */
-  async getAll(): Promise<User[]> {
-    return this.userModel.find().exec();
   }
 }

@@ -13,9 +13,4 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-
-  @Get()
-  findAll() {
-    return this.usersService.getAll();
-  }
 }

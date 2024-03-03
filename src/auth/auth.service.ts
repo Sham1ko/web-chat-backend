@@ -10,14 +10,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: AuthRegisterLoginDto) {
+  async register(dto: AuthRegisterLoginDto): Promise<void> {
     const { email, password, username } = dto;
-
     const user = await this.usersService.create({
       email,
       username,
       password,
     });
-    return user;
   }
 }
