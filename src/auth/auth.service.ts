@@ -10,14 +10,19 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: AuthRegisterLoginDto) {
-    const { email, password, username } = dto;
-
-    const user = await this.usersService.create({
+  /**
+   * Function to register a new user.
+   * @param {Object} AuthRegisterDto - AuthRegisterDto object containing user details, including password.
+   * @param AuthRegisterDto.email - The email of the user.
+   * @param AuthRegisterDto.username - The username of the user.
+   * @param AuthRegisterDto.password - The password of the user.
+   */
+  async register(AuthRegisterDto: AuthRegisterLoginDto): Promise<void> {
+    const { email, password, username } = AuthRegisterDto;
+    await this.usersService.create({
       email,
       username,
       password,
     });
-    return user;
   }
 }
