@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -15,12 +15,11 @@ export class UsersService {
    * @returns A Promise that resolves to the newly created user.
    * @throws An error if the input is invalid or if an error occurs during user creation.
    */
-
   async create(body: CreateUserDto): Promise<PublicUser> {
     try {
       const user = await this.userModel.findOne({ email: body.email }).exec();
       if (user) {
-        throw new NotFoundException('User with this email already exists');
+        throw new ConflictException('User with this email already exists');
       }
 
       const salt = await bcrypt.genSalt();
