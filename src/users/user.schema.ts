@@ -17,6 +17,9 @@ export class User {
   @Prop()
   password: string;
 
+  @Prop({ default: null })
+  rtHash: string;
+
   @Prop()
   avatarUrl: string;
 

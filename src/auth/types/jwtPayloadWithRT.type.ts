@@ -1,3 +1,3 @@
-import { JwtPayloadType } from '.';
+import { JwtPayload } from '.';
 
-export type JwtPayloadWithRT = JwtPayloadType & { refreshToken: string };
+export type JwtPayloadWithRT = JwtPayload & { refreshToken: string };

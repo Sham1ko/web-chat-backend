@@ -12,6 +12,5 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     AuthModule,
   ],
-  providers: [ChatGateway],
 })
 export class AppModule {}

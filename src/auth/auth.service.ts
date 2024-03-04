@@ -1,11 +1,11 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import ms from 'ms';
+import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 import { UsersService } from 'src/users/users.service';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import * as bcrypt from 'bcrypt';
-import { JwtPayloadType, Tokens } from './types';
+import { JwtPayload, Tokens } from './types';
 @Injectable()
 export class AuthService {
   constructor(
@@ -30,7 +30,9 @@ export class AuthService {
   }
 
   async login(AuthLoginDto: AuthLoginDto) {
-    const user = await this.usersService.findOneByEmail(AuthLoginDto.email);
+    const user = await this.usersService.getUserByField({
+      email: AuthLoginDto.email,
+    });
 
     if (!user) {
       throw new HttpException('User not found', 404);
@@ -45,13 +47,15 @@ export class AuthService {
       throw new HttpException('Password is incorrect', 401);
     }
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email);
+
+    await this.updateRefreshTokenHash(user._id, tokens.refresh_token);
 
     return tokens;
   }
 
-  private async getTokens(userId: number, email: string): Promise<Tokens> {
-    const jwtPayload: JwtPayloadType = {
+  private async generateTokens(userId: number, email: string): Promise<Tokens> {
+    const jwtPayload: JwtPayload = {
       sub: userId,
       email,
     };
@@ -71,5 +75,27 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async refreshTokens(request: Request): Promise<Tokens> {
+    const authorizationHeader = request.headers.authorization;
+    const refreshToken = authorizationHeader.split(' ')[1];
+    const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
+
+    const user = await this.usersService.getUserByField({ _id: userId });
+    if (!user || !user.rtHash) throw new ForbiddenException('Access Denied');
+
+    const isValidRefreshToken = await bcrypt.compare(refreshToken, user.rtHash);
+    if (!isValidRefreshToken) throw new ForbiddenException('Access Denied');
+
+    const tokens = await this.generateTokens(user._id, user.email);
+    await this.updateRefreshTokenHash(user._id, tokens.refresh_token);
+
+    return tokens;
+  }
+
+  async updateRefreshTokenHash(userId: number, refreshToken: string) {
+    const hash = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.updateRefreshTokenHash(userId, hash);
   }
 }
