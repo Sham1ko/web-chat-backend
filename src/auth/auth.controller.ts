@@ -45,7 +45,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  // @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(AuthGuard('jwt-refresh'))
   @HttpCode(HttpStatus.OK)
   public refresh(@Request() request): Promise<Omit<any, 'user'>> {
     return this.authService.refreshTokens(request);
