@@ -98,4 +98,15 @@ export class AuthService {
     const hash = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshTokenHash(userId, hash);
   }
+
+  async logout(request: Request) {
+    const authorizationHeader = request.headers.authorization;
+    const refreshToken = authorizationHeader.split(' ')[1];
+    const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
+
+    const user = await this.usersService.getUserByField({ _id: userId });
+    if (!user) throw new ForbiddenException('Access Denied');
+
+    await this.usersService.updateRefreshTokenHash(user._id, null);
+  }
 }

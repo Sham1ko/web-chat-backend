@@ -50,4 +50,11 @@ export class AuthController {
   public refresh(@Request() request): Promise<Omit<any, 'user'>> {
     return this.authService.refreshTokens(request);
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  public logout(@Request() request): Promise<void> {
+    return this.authService.logout(request);
+  }
 }
