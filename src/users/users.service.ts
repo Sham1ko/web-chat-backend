@@ -43,4 +43,13 @@ export class UsersService {
       throw error;
     }
   }
+
+  async getUserByField(fields): Promise<UserDocument> {
+    const user = await this.userModel.findOne(fields).exec();
+    return user;
+  }
+
+  async updateRefreshTokenHash(userId: number, rtHash: string) {
+    await this.userModel.findOneAndUpdate({ _id: userId }, { rtHash }).exec();
+  }
 }

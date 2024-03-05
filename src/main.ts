@@ -19,7 +19,8 @@ async function bootstrap() {
   // );
 
   const config = new DocumentBuilder()
-    .setTitle('Webchat')
+    .setTitle('Webchat API')
+    .setDescription('API docs')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
