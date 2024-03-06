@@ -14,9 +14,9 @@ import { Server, Socket } from 'socket.io';
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  constructor() {}
   @WebSocketServer()
   server: Server;
-
   private messageHistory: any[] = [];
 
   afterInit(server: Server) {

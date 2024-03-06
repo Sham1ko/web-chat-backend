@@ -8,10 +8,13 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor(config: ConfigService, private readonly jwtService: JwtService) {
+  constructor(
+    configService: ConfigService,
+    private readonly jwtService: JwtService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+      secretOrKey: configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,
     });
   }
