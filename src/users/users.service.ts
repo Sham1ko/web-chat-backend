@@ -1,13 +1,22 @@
-import { Injectable, Logger, ConflictException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import {
+  Injectable,
+  Logger,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User, UserDocument } from './user.schema';
-import { PublicUser } from './dto/user.interface';
+import {
+  UserSchema,
+  UserSchemaDocument,
+} from './infrastructure/persistense/user.schema';
+import { User } from './domain/user';
+import { UserDocumentRepository } from './infrastructure/persistense/user.document.repository';
+import { UserRepository } from './infrastructure/persistense/user.repository';
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(private readonly usersRepository: UserRepository) {}
 
   /**
    * Create a new user in the database with hashed password.
@@ -15,41 +24,45 @@ export class UsersService {
    * @returns A Promise that resolves to the newly created user.
    * @throws An error if the input is invalid or if an error occurs during user creation.
    */
-  async create(body: CreateUserDto): Promise<PublicUser> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const user = await this.userModel.findOne({ email: body.email }).exec();
-      if (user) {
-        throw new ConflictException('User with this email already exists');
-      }
+      const clonedPayload = {
+        ...createUserDto,
+      };
 
       const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(body.password, salt);
+      clonedPayload.password = await bcrypt.hash(clonedPayload.password, salt);
 
-      const newUser: CreateUserDto = {
-        ...body,
-        password: hashedPassword,
-      };
-      const createdUser = await this.userModel.create(newUser);
-
-      const publicUser = {
-        _id: createdUser._id,
-        username: createdUser.username,
-        email: createdUser.email,
-      };
-
-      return publicUser;
+      if (clonedPayload.email) {
+        const userObject = await this.usersRepository.findOne({
+          email: clonedPayload.email,
+        });
+        if (userObject) {
+          throw new HttpException(
+            {
+              status: HttpStatus.UNPROCESSABLE_ENTITY,
+              errors: {
+                email: 'emailAlreadyExists',
+              },
+            },
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+      }
+      console.log(clonedPayload);
+      return await this.usersRepository.create(clonedPayload);
     } catch (error) {
       Logger.error(error);
       throw error;
     }
   }
 
-  async getUserByField(fields): Promise<UserDocument> {
-    const user = await this.userModel.findOne(fields).exec();
+  async getUserByField(fields): Promise<User> {
+    const user = await this.usersRepository.findOne(fields);
     return user;
   }
 
-  async updateRefreshTokenHash(userId: number, rtHash: string) {
-    await this.userModel.findOneAndUpdate({ _id: userId }, { rtHash }).exec();
+  async updateRefreshTokenHash(userId: string, rtHash: string) {
+    await this.usersRepository.update(userId, { rtHash });
   }
 }
