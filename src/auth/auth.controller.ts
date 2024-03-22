@@ -9,15 +9,11 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthRegisterDto } from './dto/auth-register.dto';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
+import { LoginResponseType } from './types/login-response.type';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -34,14 +30,15 @@ export class AuthController {
     description: 'User with this email already exists',
   })
   @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  register(@Body() dto: AuthRegisterDto): Promise<void> {
-    return this.authService.register(dto);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  register(@Body() registerDto: AuthRegisterDto): Promise<void> {
+    return this.authService.register(registerDto);
   }
 
   @Post('login')
-  login(@Body() dto: AuthLoginDto): any {
-    return this.authService.login(dto);
+  @HttpCode(HttpStatus.OK)
+  login(@Body() loginDto: AuthLoginDto): Promise<LoginResponseType> {
+    return this.authService.login(loginDto);
   }
 
   @Post('refresh')

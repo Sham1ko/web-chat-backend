@@ -1,21 +1,33 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
+import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
 
-  // app.setGlobalPrefix('api');
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
 
-  const config = new DocumentBuilder()
+  app.useGlobalInterceptors(
+    // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
+    // https://github.com/typestack/class-transformer/issues/549
+    new ResolvePromisesInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
+  );
+
+  const options = new DocumentBuilder()
     .setTitle('Webchat API')
     .setDescription('API docs')
     .setVersion('1.0')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('docs', app, document);
 
   await app.listen(3000);

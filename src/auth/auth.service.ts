@@ -47,14 +47,17 @@ export class AuthService {
       throw new HttpException('Password is incorrect', 401);
     }
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const { accessToken, refreshToken } = await this.generateTokens(
+      user.id,
+      user.email,
+    );
 
-    await this.updateRefreshTokenHash(user._id, tokens.refresh_token);
+    await this.updateRefreshTokenHash(user.id, refreshToken);
 
-    return tokens;
+    return { accessToken, refreshToken, userData: user };
   }
 
-  private async generateTokens(userId: number, email: string): Promise<Tokens> {
+  private async generateTokens(userId: string, email: string): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
       sub: userId,
       email,
@@ -72,8 +75,8 @@ export class AuthService {
     ]);
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -88,13 +91,13 @@ export class AuthService {
     const isValidRefreshToken = await bcrypt.compare(refreshToken, user.rtHash);
     if (!isValidRefreshToken) throw new ForbiddenException('Access Denied');
 
-    const tokens = await this.generateTokens(user._id, user.email);
-    await this.updateRefreshTokenHash(user._id, tokens.refresh_token);
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  async updateRefreshTokenHash(userId: number, refreshToken: string) {
+  async updateRefreshTokenHash(userId: string, refreshToken: string) {
     const hash = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshTokenHash(userId, hash);
   }
@@ -107,6 +110,6 @@ export class AuthService {
     const user = await this.usersService.getUserByField({ _id: userId });
     if (!user) throw new ForbiddenException('Access Denied');
 
-    await this.usersService.updateRefreshTokenHash(user._id, null);
+    await this.usersService.updateRefreshTokenHash(user.id, null);
   }
 }
