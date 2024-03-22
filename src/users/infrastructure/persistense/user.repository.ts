@@ -7,7 +7,7 @@ import { DeepPartial } from 'src/utils/types/deep-partial.type';
 
 export abstract class UserRepository {
   abstract create(
-    data: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'avatarUrl'>,
+    data: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'avatarUrl' | 'rtHash'>,
   ): Promise<User>;
 
   abstract findManyWithPagination({

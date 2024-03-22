@@ -84,8 +84,7 @@ export class AuthService {
     const authorizationHeader = request.headers.authorization;
     const refreshToken = authorizationHeader.split(' ')[1];
     const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
-
-    const user = await this.usersService.getUserByField({ _id: userId });
+    const user = await this.usersService.getUserByField({ id: userId });
     if (!user || !user.rtHash) throw new ForbiddenException('Access Denied');
 
     const isValidRefreshToken = await bcrypt.compare(refreshToken, user.rtHash);
@@ -98,7 +97,8 @@ export class AuthService {
   }
 
   async updateRefreshTokenHash(userId: string, refreshToken: string) {
-    const hash = await bcrypt.hash(refreshToken, 10);
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(refreshToken, salt);
     await this.usersService.updateRefreshTokenHash(userId, hash);
   }
 
@@ -107,9 +107,18 @@ export class AuthService {
     const refreshToken = authorizationHeader.split(' ')[1];
     const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
 
-    const user = await this.usersService.getUserByField({ _id: userId });
+    const user = await this.usersService.getUserByField({ id: userId });
+    console.log(user);
     if (!user) throw new ForbiddenException('Access Denied');
 
     await this.usersService.updateRefreshTokenHash(user.id, null);
+  }
+
+  async me(request: Request) {
+    const authorizationHeader = request.headers.authorization;
+    const accessToken = authorizationHeader.split(' ')[1];
+    const { sub: userId } = this.jwtService.decode(accessToken) as JwtPayload;
+
+    return this.usersService.getUserByField({ id: userId });
   }
 }

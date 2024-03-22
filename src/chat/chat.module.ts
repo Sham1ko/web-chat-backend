@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ChatGateway } from './chat.gateway';
+import { ChatGateway } from './gateways/chat.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MessageSchema, RoomSchema } from './entities';
 import { MessageService } from './services/message/message.service';
@@ -11,8 +11,6 @@ import { MessageService } from './services/message/message.service';
         name: 'Message',
         schema: MessageSchema,
       },
-    ]),
-    MongooseModule.forFeature([
       {
         name: 'Room',
         schema: RoomSchema,

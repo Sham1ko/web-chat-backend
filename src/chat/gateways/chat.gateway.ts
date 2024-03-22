@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { MessageService } from './services/message/message.service';
+import { MessageService } from '../services/message/message.service';
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -30,21 +30,21 @@ export class ChatGateway
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    Logger.log(`Client connected: ${client.id}`, 'ChatGateway');
     this.sendHistoryToClient(client);
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    Logger.log(`Client disconnected: ${client.id}`, 'ChatGateway');
   }
 
   @SubscribeMessage('message')
-  handleMessage(client: Socket, message: string) {
+  handleMessage(client: Socket, message: any) {
     console.log(`Received message from client ${client.id}: ${message}`);
 
     const newMessage = {
-      user: client.id,
-      text: message,
+      user: message.user,
+      text: message.messageInput,
       createdAt: new Date(),
     };
 

@@ -8,6 +8,7 @@ export class UserMapper {
     user.email = raw.email;
     user.username = raw.username;
     user.password = raw.password;
+    user.rtHash = raw.rtHash;
     user.avatarUrl = raw.avatarUrl;
     user.createdAt = raw.createdAt;
     user.updatedAt = raw.updatedAt;
@@ -22,6 +23,7 @@ export class UserMapper {
     userEntity.email = user.email;
     userEntity.password = user.password;
     userEntity.username = user.username;
+    userEntity.rtHash = user.rtHash;
     userEntity.avatarUrl = user.avatarUrl;
     userEntity.createdAt = user.createdAt;
     userEntity.updatedAt = user.updatedAt;

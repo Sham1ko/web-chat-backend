@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -14,6 +15,7 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthLoginResponseDto } from './dto/auth-login-response.dto';
 import { LoginResponseType } from './types/login-response.type';
+import { User } from 'src/users/domain/user';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,7 +46,9 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(AuthGuard('jwt-refresh'))
   @HttpCode(HttpStatus.OK)
-  public refresh(@Request() request): Promise<Omit<any, 'user'>> {
+  public refresh(
+    @Request() request,
+  ): Promise<Omit<LoginResponseType, 'userData'>> {
     return this.authService.refreshTokens(request);
   }
 
@@ -53,5 +57,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public logout(@Request() request): Promise<void> {
     return this.authService.logout(request);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  public me(@Request() request): Promise<User> {
+    return this.authService.me(request);
   }
 }

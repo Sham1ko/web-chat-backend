@@ -14,7 +14,7 @@ export class User {
   password: string;
 
   @Exclude({ toPlainOnly: true })
-  rtHash?: string;
+  rtHash: string;
 
   @Expose()
   avatarUrl: string;
