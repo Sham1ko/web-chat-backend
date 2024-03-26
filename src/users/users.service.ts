@@ -1,18 +1,7 @@
-import {
-  Injectable,
-  Logger,
-  ConflictException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
-import {
-  UserSchema,
-  UserSchemaDocument,
-} from './infrastructure/persistense/user.schema';
 import { User } from './domain/user';
-import { UserDocumentRepository } from './infrastructure/persistense/user.document.repository';
 import { UserRepository } from './infrastructure/persistense/user.repository';
 @Injectable()
 export class UsersService {
@@ -49,7 +38,7 @@ export class UsersService {
           );
         }
       }
-      console.log(clonedPayload);
+
       return await this.usersRepository.create(clonedPayload);
     } catch (error) {
       Logger.error(error);
