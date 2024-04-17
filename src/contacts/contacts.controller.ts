@@ -8,7 +8,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Contacts')
 @Controller('contacts')
 export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
