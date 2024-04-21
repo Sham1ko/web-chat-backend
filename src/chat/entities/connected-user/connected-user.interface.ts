@@ -1,4 +1,4 @@
-import { IUser } from 'src/users/infrastructure/persistense/user.interface';
+import { IUser } from 'src/modules/users/infrastructure/persistence/user.interface';
 
 export interface IConnectedUser {
   id?: number;
