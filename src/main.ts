@@ -15,17 +15,11 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
 
-  app.useGlobalInterceptors(
-    // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
-    // https://github.com/typestack/class-transformer/issues/549
-    new ResolvePromisesInterceptor(),
-    new ClassSerializerInterceptor(app.get(Reflector)),
-  );
-
   const options = new DocumentBuilder()
     .setTitle('Webchat API')
     .setDescription('API docs')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('docs', app, document);

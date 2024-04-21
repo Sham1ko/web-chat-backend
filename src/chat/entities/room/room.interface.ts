@@ -1,4 +1,4 @@
-import { IUser } from 'src/users/infrastructure/persistense/user.interface';
+import { IUser } from 'src/modules/users/infrastructure/persistence/user.interface';
 import { IMessage } from '../message/message.interface';
 
 export interface IRoom {

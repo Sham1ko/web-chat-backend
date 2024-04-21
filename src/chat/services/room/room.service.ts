@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IRoom, Room, RoomDocument } from 'src/chat/entities';
-import { IUser } from 'src/users/infrastructure/persistense/user.interface';
+import { IUser } from 'src/modules/users/infrastructure/persistence/user.interface';
 
 @Injectable()
 export class RoomService {

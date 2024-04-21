@@ -1,7 +1,7 @@
 import { Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Message } from '../message/message.schema';
 import { Document } from 'mongoose';
-import { User } from 'src/users/domain/user';
+import { User } from 'src/modules/users/domain/user';
 
 export class Room {
   @Prop()

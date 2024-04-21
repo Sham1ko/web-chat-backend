@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from './database/database.module';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { ContactsModule } from './contacts/contacts.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
+import { DatabaseModule } from './processors/database.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
-    UsersModule,
+    // ContactsModule,
     AuthModule,
-    ChatModule,
-    ContactsModule,
+    UserModule,
+    // ChatModule,
   ],
 })
 export class AppModule {}
