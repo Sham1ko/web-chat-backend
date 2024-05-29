@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { ContactSchemaClass, ContactSchemaDocument } from './contacts.schema';
+import { ContactModel } from './contacts.model';
+import { InjectModel } from 'src/transformers/model.transformer';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
 export class ContactsService {
   constructor(
-    @InjectModel(ContactSchemaClass.name)
-    private readonly contactModel: Model<ContactSchemaDocument>,
+    @InjectModel(ContactModel)
+    private readonly contactModel: ReturnModelType<typeof ContactModel>,
   ) {}
 
   async addContact(

@@ -2,14 +2,14 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserModel } from './user.model';
 import { InjectModel } from 'src/transformers/model.transformer';
-import { MongooseModel } from 'src/interfaces/mongoose.interface';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(UserModel)
-    private readonly userModel: MongooseModel<UserModel>,
+    private readonly userModel: ReturnModelType<typeof UserModel>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -49,7 +49,7 @@ export class UserService {
     return await this.userModel.find();
   }
 
-  async findOne(field) {
-    return await this.userModel.findOne(field);
+  async findOne(field, select?) {
+    return await this.userModel.findOne(field).select(select);
   }
 }
