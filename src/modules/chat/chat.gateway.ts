@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { MessageService } from '../services/message/message.service';
+import { MessageService } from './services/message.service';
 
 @Injectable()
 @WebSocketGateway({ cors: true })

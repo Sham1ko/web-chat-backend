@@ -1,4 +1,10 @@
-import { ForbiddenException, HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { AuthRegisterDto } from './dto/auth-register.dto';
@@ -6,12 +12,14 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens, JwtPayload } from './types';
 import { UserService } from '../user/user.service';
+import { SessionService } from '../session/session.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private sessionService: SessionService,
   ) {}
 
   /**
@@ -31,33 +39,34 @@ export class AuthService {
   }
 
   async login(AuthLoginDto: AuthLoginDto) {
-    const user = await this.userService.findOne({
-      email: AuthLoginDto.email,
-    });
+    const user = await this.userService.findOne(
+      {
+        email: AuthLoginDto.email,
+      },
+      '+password',
+    );
 
-    // if (!user) {
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-    //   throw new HttpException('User not found', 404);
-    // }
+    const isValidPassword = await bcrypt.compare(
+      AuthLoginDto.password,
+      user.password,
+    );
 
-    // const isValidPassword = await bcrypt.compare(
-    //   AuthLoginDto.password,
-    //   user.password,
-    // );
+    if (!isValidPassword) {
+      throw new BadRequestException('Password is incorrect');
+    }
 
-    // if (!isValidPassword) {
-    //   throw new HttpException('Password is incorrect', 401);
-    // }
+    const { accessToken, refreshToken } = await this.generateTokens(
+      user.id,
+      user.email,
+    );
 
-    // const { accessToken, refreshToken } = await this.generateTokens(
-    //   user.id,
-    //   user.email,
-    // );
+    await this.sessionService.create(user.id, refreshToken);
 
-    // await this.updateRefreshTokenHash(user.id, refreshToken);
-
-    // return { accessToken, refreshToken, userData: user };
-    return user;
+    return { accessToken, refreshToken, userData: user };
   }
 
   private async generateTokens(userId: string, email: string): Promise<Tokens> {
@@ -86,42 +95,42 @@ export class AuthService {
   async refreshTokens(request: Request): Promise<Tokens> {
     const authorizationHeader = request.headers.authorization;
     const refreshToken = authorizationHeader.split(' ')[1];
-    const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
-    const user = await this.userService.findOne({ id: userId });
-    if (!user) throw new ForbiddenException('Access Denied');
+    const { sub: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
+    const user = await this.userService.findOne({ _id });
+    if (!user) {
+      throw new ForbiddenException('Access Denied');
+    }
 
-    // const isValidRefreshToken = await bcrypt.compare(refreshToken, user.rtHash);
-    // if (!isValidRefreshToken) throw new ForbiddenException('Access Denied');
+    const session = await this.sessionService.findSessionByUserId(user.id);
+    const isValidRefreshToken = await bcrypt.compare(
+      refreshToken,
+      session.hash,
+    );
+    if (!isValidRefreshToken) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.generateTokens(user.id, user.email);
-    // await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+    await this.sessionService.delete(user.id);
+    await this.sessionService.create(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  // async updateRefreshTokenHash(userId: string, refreshToken: string) {
-  //   const salt = await bcrypt.genSalt();
-  //   const hash = await bcrypt.hash(refreshToken, salt);
-  //   await this.userService.updateRefreshTokenHash(userId, hash);
-  // }
+  async logout(request: Request) {
+    const authorizationHeader = request.headers.authorization;
+    const refreshToken = authorizationHeader.split(' ')[1];
+    const { sub: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
 
-  // async logout(request: Request) {
-  //   const authorizationHeader = request.headers.authorization;
-  //   const refreshToken = authorizationHeader.split(' ')[1];
-  //   const { sub: userId } = this.jwtService.decode(refreshToken) as JwtPayload;
+    const user = await this.userService.findOne({ _id });
+    if (!user) throw new ForbiddenException('Access Denied');
 
-  //   const user = await this.userService.getUserByField({ id: userId });
-  //   console.log(user);
-  //   if (!user) throw new ForbiddenException('Access Denied');
+    await this.sessionService.delete(user.id);
+  }
 
-  //   await this.userService.updateRefreshTokenHash(user.id, null);
-  // }
-
-  // async me(request: Request) {
-  //   const authorizationHeader = request.headers.authorization;
-  //   const accessToken = authorizationHeader.split(' ')[1];
-  //   const { sub: userId } = this.jwtService.decode(accessToken) as JwtPayload;
-
-  //   return this.userService.getUserByField({ id: userId });
-  // }
+  async me(request: Request) {
+    const authorizationHeader = request.headers.authorization;
+    const accessToken = authorizationHeader.split(' ')[1];
+    const { sub: _id } = this.jwtService.decode(accessToken) as JwtPayload;
+    const user = await this.userService.findOne({ _id });
+    return user;
+  }
 }

@@ -1,8 +1,6 @@
-import { User } from 'src/modules/users/domain/user';
-
 export type JwtRefreshPayloadType = {
-  sub: User['id'];
-  email: User['email'];
+  sub: string;
+  email: string;
   iat: number;
   exp: number;
 };

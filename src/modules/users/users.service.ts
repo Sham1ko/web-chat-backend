@@ -1,11 +1,10 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './domain/user';
-import { UserRepository } from './infrastructure/persistence/user.repository';
+// import { User } from './domain/user';
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UserRepository) {}
+  constructor(private readonly usersRepository: any) {}
 
   /**
    * Create a new user in the database with hashed password.
@@ -13,7 +12,7 @@ export class UsersService {
    * @returns A Promise that resolves to the newly created user.
    * @throws An error if the input is invalid or if an error occurs during user creation.
    */
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto) {
     try {
       const clonedPayload = {
         ...createUserDto,
@@ -46,7 +45,7 @@ export class UsersService {
     }
   }
 
-  async getUserByField(fields): Promise<User> {
+  async getUserByField(fields) {
     const user = await this.usersRepository.findOne(fields);
     return user;
   }

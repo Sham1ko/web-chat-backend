@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { Message, MessageDocument } from '../../entities';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel } from 'src/transformers/model.transformer';
+import { MessageModel } from '../models/message.model';
+import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
 export class MessageService {
   constructor(
-    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+    @InjectModel(MessageModel)
+    private messageModel: ReturnModelType<typeof MessageModel>,
   ) {}
 
-  async create(message: Message) {
+  async create(message: any) {
     console.log(message);
     const newMessage = await this.messageModel.create(message);
     console.log('New message created:', newMessage);
