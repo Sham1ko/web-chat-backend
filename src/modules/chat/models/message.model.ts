@@ -10,10 +10,10 @@ export class MessageModel {
   userId: string;
 
   @Prop({ required: true })
-  roomId: string;
+  chatId: string;
 
   @Prop()
   createdAt: Date;
 }
 
-export const MessageProvider = getProviderByTypegooseClass(MessageModel);
+export const MessageModelProvider = getProviderByTypegooseClass(MessageModel);

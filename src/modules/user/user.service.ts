@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserModel } from './user.model';
 import { InjectModel } from 'src/transformers/model.transformer';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ReturnModelType } from '@typegoose/typegoose';
 
 @Injectable()
@@ -12,7 +11,7 @@ export class UserService {
     private readonly userModel: ReturnModelType<typeof UserModel>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto) {
     try {
       const clonedPayload = {
         ...createUserDto,

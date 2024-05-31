@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   async login(AuthLoginDto: AuthLoginDto) {
-    const user = await this.userService.findOne(
+    let user = await this.userService.findOne(
       {
         email: AuthLoginDto.email,
       },
@@ -66,12 +66,15 @@ export class AuthService {
 
     await this.sessionService.create(user.id, refreshToken);
 
+    user = user.toObject();
+    delete user.password;
+
     return { accessToken, refreshToken, userData: user };
   }
 
   private async generateTokens(userId: string, email: string): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
-      sub: userId,
+      id: userId,
       email,
     };
 
@@ -95,7 +98,7 @@ export class AuthService {
   async refreshTokens(request: Request): Promise<Tokens> {
     const authorizationHeader = request.headers.authorization;
     const refreshToken = authorizationHeader.split(' ')[1];
-    const { sub: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
+    const { id: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
     const user = await this.userService.findOne({ _id });
     if (!user) {
       throw new ForbiddenException('Access Denied');
@@ -118,7 +121,7 @@ export class AuthService {
   async logout(request: Request) {
     const authorizationHeader = request.headers.authorization;
     const refreshToken = authorizationHeader.split(' ')[1];
-    const { sub: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
+    const { id: _id } = this.jwtService.decode(refreshToken) as JwtPayload;
 
     const user = await this.userService.findOne({ _id });
     if (!user) throw new ForbiddenException('Access Denied');
@@ -129,7 +132,7 @@ export class AuthService {
   async me(request: Request) {
     const authorizationHeader = request.headers.authorization;
     const accessToken = authorizationHeader.split(' ')[1];
-    const { sub: _id } = this.jwtService.decode(accessToken) as JwtPayload;
+    const { id: _id } = this.jwtService.decode(accessToken) as JwtPayload;
     const user = await this.userService.findOne({ _id });
     return user;
   }

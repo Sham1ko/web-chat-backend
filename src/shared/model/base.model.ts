@@ -15,7 +15,6 @@ import { modelOptions } from '@typegoose/typegoose';
   },
 })
 export class BaseModel {
-  id: string;
   createdAt?: Date;
 
   static get protectedKeys() {

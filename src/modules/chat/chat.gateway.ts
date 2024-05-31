@@ -20,11 +20,6 @@ export class ChatGateway
   server: Server;
   private messageHistory: any[] = [];
 
-  async beforeInit(client: Socket) {
-    console.log('Initializing socket.io server');
-    this.messageHistory = await this.messageService.getMessages();
-  }
-
   afterInit(server: Server) {
     console.log('Socket.io server initialized');
   }
@@ -49,7 +44,7 @@ export class ChatGateway
     };
 
     this.messageHistory.push(newMessage);
-    this.messageService.create(newMessage);
+    // this.messageService.create(newMessage);
     this.server.emit('message', newMessage);
   }
 

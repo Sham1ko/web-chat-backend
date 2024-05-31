@@ -13,9 +13,6 @@ export class ContactModel extends BaseModel {
 
   @prop({ default: Date.now })
   addedAt: Date;
-
-  @prop()
-  nickname: string;
 }
 
 export const ContactsModelProvider = getProviderByTypegooseClass(ContactModel);
